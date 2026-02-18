@@ -12,7 +12,8 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo">T</div>
+      <!-- ✅ LOGO REAL (carpeta assets) -->
+      <img class="logo-img" src="./assets/logo_taxi360.jpg" alt="Taxi360" />
       <div>
         <div class="brand-title">Taxi360 KPI Intelligence</div>
         <div class="brand-sub">Rentabilidad real + patrones + acción (lo que un inversor entiende en 10s)</div>
@@ -32,7 +33,7 @@
 
     <section class="panel premium">
       <div class="panel-head row">
-        <h2>Propuesta de valor (oro puro)</h2>
+        <h2>Propuesta de valor</h2>
         <div class="badge">Impacto medible</div>
       </div>
       <div class="premium-grid">
@@ -114,15 +115,6 @@
           </select>
         </div>
 
-        <!-- Selector de conductor -->
-        <div class="field hidden" id="driverField">
-          <label>Conductor</label>
-          <select id="driverSelect"></select>
-          <div class="small muted">
-            Para vista <b>Conductor</b> con CSV multi-conductor: elige uno para ver datos 100% reales.
-          </div>
-        </div>
-
         <div class="field">
           <label>Umbral rentabilidad (€/h netos)</label>
           <input id="rentableThreshold" type="number" step="0.1" value="10" />
@@ -187,7 +179,7 @@
       <ul class="action-list" id="actionList"></ul>
     </section>
 
-    <!-- FLOTA: RANKING + EXPORT -->
+    <!-- ✅ FLOTA: RANKING + EXPORT -->
     <section class="panel hidden" id="driverRankingPanel">
       <div class="panel-head row">
         <h2>Flota: ranking de conductores</h2>
@@ -195,25 +187,6 @@
           <button id="exportFleetBtn" class="ghost" disabled>Descargar análisis flota (CSV)</button>
         </div>
       </div>
-
-      <!-- ✅ NUEVO: Export por conductor -->
-      <div class="subpanel" id="driverExportPanel">
-        <div class="subhead">
-          <h3>Export por conductor</h3>
-          <div class="small muted">Descarga el mismo análisis, pero filtrado por un conductor concreto.</div>
-        </div>
-        <div class="filters" style="grid-template-columns: 2fr 1fr; gap:12px;">
-          <div class="field">
-            <label>Conductor</label>
-            <select id="exportDriverSelect"></select>
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <button id="exportDriverBtn" class="ghost" disabled>Descargar conductor (CSV)</button>
-          </div>
-        </div>
-      </div>
-
       <div class="small muted">
         Ordenado por <b>€ / hora</b> (en flota = bruto/h). Incluye explicación automática del peor rendimiento.
       </div>
@@ -348,27 +321,10 @@
 
     <footer class="footer">
       <div class="small muted">
-        Si el navegador bloquea el archivo, usa servidor local:
-        <code>python -m http.server 8080</code> → <code>http://localhost:8080</code>
+        <code></code> → <code></code>
       </div>
     </footer>
-
   </main>
-
-  <!-- Loader -->
-  <div id="loaderOverlay" class="loader-overlay hidden" aria-live="polite" aria-busy="true">
-    <div class="loader-card">
-      <div class="spinner" aria-hidden="true"></div>
-      <div>
-        <div class="loader-title" id="loaderTitle">Analizando CSV…</div>
-        <div class="loader-sub" id="loaderSub">Normalizando datos y calculando KPIs</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toasts -->
-  <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
-
   <script src="./app.js"></script>
 </body>
 </html>

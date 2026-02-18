@@ -739,3 +739,46 @@ tbody tr:last-child td{border-bottom:none;}
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important; animation:none !important;}
 }
+/* ✅ LOGO HEADER (igual de pequeño que la "T") */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-img{
+  width: 44px;      /* tamaño similar al antiguo cuadrado */
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18);
+}
+
+/* Si tu CSS anterior tenía .logo con tamaño, lo replicamos para no romper layout */
+.logo{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+/* ✅ Logo tipo icono: el contenedor manda (anti img{width:100%}) */
+header.topbar .logo{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+header.topbar .logo img.logo-img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+}
