@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Taxi360 KPI Intelligence</title>
+  <link rel="stylesheet" href="./styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">T</div>
+      <div>
+        <div class="brand-title">Taxi360 KPI Intelligence</div>
+        <div class="brand-sub">Rentabilidad real + patrones + acción (lo que un inversor entiende en 10s)</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <label class="file-btn">
+        <input id="fileInput" type="file" accept=".csv,text/csv" />
+        <span>Subir CSV</span>
+      </label>
+      <button id="btnDemoData" class="ghost">Cargar demo (si no hay CSV)</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="panel premium">
+      <div class="panel-head row">
+        <h2>Propuesta de valor (oro puro)</h2>
+        <div class="badge">Impacto medible</div>
+      </div>
+      <div class="premium-grid">
+        <div class="premium-card">
+          <div class="premium-title">El dolor</div>
+          <div class="premium-text">
+            Sin datos, el taxi funciona “a ojo”: días malos repetidos, km en vacío, baja actividad por franjas,
+            y objetivos que se incumplen sin saber por qué.
+          </div>
+        </div>
+        <div class="premium-card">
+          <div class="premium-title">La solución</div>
+          <div class="premium-text">
+            Taxi360 convierte un CSV en un <b>sistema de control</b>: detecta patrones, compara periodos,
+            identifica bajadas y muestra <b>qué cambiar mañana</b>.
+          </div>
+        </div>
+        <div class="premium-card">
+          <div class="premium-title">El resultado</div>
+          <div class="premium-text">
+            Aumenta el <b>€/hora</b>, reduce “días malos” y para flotas crea un ranking operativo:
+            <b>quién rentabiliza más, quién cae y por qué</b>.
+          </div>
+        </div>
+      </div>
+      <div class="premium-strip">
+        <div class="premium-kpi">
+          <div class="premium-kpi-label">Lo que se entiende al instante</div>
+          <div class="premium-kpi-value">“Patrón semanal + conductor top + alerta + acción”</div>
+        </div>
+        <div class="premium-kpi">
+          <div class="premium-kpi-label">Diferenciador</div>
+          <div class="premium-kpi-value">Heatmap semanal + explicación automática + recomendación accionable</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Filtros</h2>
+        <div class="small muted">Subes CSV y obtienes análisis automático sin configurar nada.</div>
+      </div>
+
+      <div class="filters">
+        <div class="field">
+          <label>Modo</label>
+          <select id="filterMode">
+            <option value="month">Mes</option>
+            <option value="year">Año</option>
+            <option value="range">Rango</option>
+          </select>
+        </div>
+
+        <div class="field" id="monthField">
+          <label>Mes</label>
+          <input id="monthInput" type="month" />
+        </div>
+
+        <div class="field hidden" id="yearField">
+          <label>Año</label>
+          <select id="yearSelect"></select>
+        </div>
+
+        <div class="field hidden" id="rangeField">
+          <label>Rango</label>
+          <div class="range">
+            <input id="startDate" type="date" />
+            <span class="muted">→</span>
+            <input id="endDate" type="date" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Vista</label>
+          <select id="viewMode">
+            <option value="driver">Conductor (neto)</option>
+            <option value="boss">Jefe/Empresa</option>
+            <option value="fleet">Flota (eficiencia + ranking)</option>
+          </select>
+        </div>
+
+        <!-- Selector de conductor -->
+        <div class="field hidden" id="driverField">
+          <label>Conductor</label>
+          <select id="driverSelect"></select>
+          <div class="small muted">
+            Para vista <b>Conductor</b> con CSV multi-conductor: elige uno para ver datos 100% reales.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Umbral rentabilidad (€/h netos)</label>
+          <input id="rentableThreshold" type="number" step="0.1" value="10" />
+          <div class="small muted">
+            Rentable si <b>€/h ≥ umbral</b>. Ej.: umbral 10 → 9,8 €/h = NO rentable.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="applyBtn">Aplicar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head row">
+        <h2>Resumen</h2>
+        <div class="badge" id="periodBadge">—</div>
+      </div>
+
+      <div class="kpis" id="kpiGrid"></div>
+
+      <div class="insights">
+        <div class="insight-head">
+          <h3>Alertas inteligentes</h3>
+          <div class="small muted">Tendencias, patrón semanal, mejores/peores jornadas y señales de eficiencia.</div>
+        </div>
+        <ul id="insightList" class="insight-list"></ul>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head row">
+        <h2>Heatmap semanal (malo → bueno)</h2>
+        <div class="badge">Patrón visible</div>
+      </div>
+      <div class="small muted">
+        Muestra la <b>media €/h</b> por día de semana. Sirve para detectar el patrón real (ej. “los lunes bajan”).
+      </div>
+
+      <div class="heatmap" id="heatmapGrid"></div>
+
+      <div class="heatmap-legend">
+        <span class="legend-pill heat-0">muy bajo</span>
+        <span class="legend-pill heat-1">bajo</span>
+        <span class="legend-pill heat-2">medio</span>
+        <span class="legend-pill heat-3">bueno</span>
+        <span class="legend-pill heat-4">muy bueno</span>
+        <span class="legend-pill heat-5">top</span>
+      </div>
+    </section>
+
+    <section class="panel" id="actionPanel">
+      <div class="panel-head row">
+        <h2>Qué cambiar mañana (acción directa)</h2>
+        <div class="badge">Accionable</div>
+      </div>
+      <div class="small muted">
+        Recomendaciones basadas en tus datos actuales (sin humo).
+      </div>
+      <ul class="action-list" id="actionList"></ul>
+    </section>
+
+    <!-- FLOTA: RANKING + EXPORT -->
+    <section class="panel hidden" id="driverRankingPanel">
+      <div class="panel-head row">
+        <h2>Flota: ranking de conductores</h2>
+        <div class="panel-actions">
+          <button id="exportFleetBtn" class="ghost" disabled>Descargar análisis flota (CSV)</button>
+        </div>
+      </div>
+
+      <!-- ✅ NUEVO: Export por conductor -->
+      <div class="subpanel" id="driverExportPanel">
+        <div class="subhead">
+          <h3>Export por conductor</h3>
+          <div class="small muted">Descarga el mismo análisis, pero filtrado por un conductor concreto.</div>
+        </div>
+        <div class="filters" style="grid-template-columns: 2fr 1fr; gap:12px;">
+          <div class="field">
+            <label>Conductor</label>
+            <select id="exportDriverSelect"></select>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="exportDriverBtn" class="ghost" disabled>Descargar conductor (CSV)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="small muted">
+        Ordenado por <b>€ / hora</b> (en flota = bruto/h). Incluye explicación automática del peor rendimiento.
+      </div>
+
+      <div class="table-wrap" style="margin-top:12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Ranking</th>
+              <th>Conductor</th>
+              <th>Jornadas</th>
+              <th>Horas</th>
+              <th>Km</th>
+              <th>Servicios</th>
+              <th>€ / hora</th>
+              <th>€ / km</th>
+              <th>Servicios / h</th>
+              <th>Km / h</th>
+              <th>% VISA</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="driverRankingBody"></tbody>
+        </table>
+      </div>
+
+      <div class="subpanel">
+        <div class="subhead">
+          <h3>Explicación automática del peor rendimiento (por conductor)</h3>
+          <div class="small muted">Causa probable + recomendación concreta.</div>
+        </div>
+        <ul id="driverExplainList" class="insight-list"></ul>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Gráficas</h2>
+        <div class="small muted">Por día (dentro del filtro seleccionado)</div>
+      </div>
+
+      <div class="charts">
+        <div class="chart-card">
+          <div class="chart-title">€/hora</div>
+          <canvas id="chartNetPerHour"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">€/km</div>
+          <canvas id="chartNetPerKm"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Km/h y Servicios/h</div>
+          <canvas id="chartEfficiency"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">% VISA y Ticket medio</div>
+          <canvas id="chartMix"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Nómina / Objetivos</h2>
+        <div class="small muted">Define objetivo mensual neto y mira progreso + ritmo necesario.</div>
+      </div>
+
+      <div class="goals">
+        <div class="goal-box">
+          <div class="field">
+            <label>Objetivo mensual (€/mes)</label>
+            <input id="monthlyGoal" type="number" step="1" value="2200" />
+          </div>
+
+          <div class="field">
+            <label>Tipo</label>
+            <select id="goalType">
+              <option value="salary">Nómina objetivo</option>
+              <option value="profit">Objetivo de ganancia</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="recalcGoalBtn" class="ghost">Recalcular</button>
+          </div>
+        </div>
+
+        <div class="progress-card">
+          <div class="progress-top">
+            <div>
+              <div class="progress-title" id="goalTitle">—</div>
+              <div class="small muted" id="goalSubtitle">—</div>
+            </div>
+            <div class="big" id="goalMain">—</div>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" id="goalFill" style="width:0%"></div>
+          </div>
+
+          <div class="progress-meta" id="goalMeta">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Jornadas (detalle)</h2>
+        <div class="small muted">TOP/PEOR + rentable/no rentable + día de semana para ver patrón.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Horas</th>
+              <th>Km</th>
+              <th>Servicios</th>
+              <th>Bruto</th>
+              <th>Neto (vista)</th>
+              <th>€/h</th>
+              <th>€/km</th>
+              <th>% VISA</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="small muted">
+        Si el navegador bloquea el archivo, usa servidor local:
+        <code>python -m http.server 8080</code> → <code>http://localhost:8080</code>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Loader -->
+  <div id="loaderOverlay" class="loader-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="loader-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>
+        <div class="loader-title" id="loaderTitle">Analizando CSV…</div>
+        <div class="loader-sub" id="loaderSub">Normalizando datos y calculando KPIs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toastHost" class="toast-host" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
